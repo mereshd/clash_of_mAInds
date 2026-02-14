@@ -247,7 +247,7 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
           clash of m<span className="text-gradient-gold">AI</span>nds
         </h1>
         <p className="text-lg text-muted-foreground max-w-xl mx-auto">
-          Create unique personalities and watch them debate any topic with AI-powered arguments.
+          AI-powered personalities collide in multi-perspective intellectual showdowns on any topic you choose.
         </p>
       </div>
 

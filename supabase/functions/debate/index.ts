@@ -6,13 +6,22 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const OBJECTIVE_PROMPTS: Record<string, string> = {
+  neutral:
+    "You approach this discussion with genuine curiosity and balanced reasoning. You consider multiple perspectives fairly, acknowledge valid points from any side, and seek nuanced understanding rather than winning. You ask thoughtful questions and build bridges between opposing views.",
+  argumentative:
+    "You are confrontational and combative. You aggressively challenge every point your opponent makes, pick apart their logic, use sharp rhetoric, and fight to dominate the debate. You are relentless, provocative, and love a good intellectual fight.",
+  affirmative:
+    "You are supportive and constructive. You look for common ground, build on your opponent's ideas where possible, and present your own views in a collaborative way. You aim to advance the conversation positively while still making your own case clearly.",
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { debaterA, debaterB, topic, history, responseLength } = await req.json();
+    const { personalityA, personalityB, topic, history, responseLength } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -25,26 +34,26 @@ serve(async (req) => {
     };
     const lengthRule = lengthInstructions[responseLength] || lengthInstructions[3];
 
-    // Determine whose turn it is (excluding mediator entries)
     const debateHistory = history ? history.filter((e: any) => !e.isMediator) : [];
     const turnIndex = debateHistory.length;
-    const isDebaterA = turnIndex % 2 === 0;
-    const currentDebater = isDebaterA ? debaterA : debaterB;
-    const opponent = isDebaterA ? debaterB : debaterA;
+    const isPersonalityA = turnIndex % 2 === 0;
+    const current = isPersonalityA ? personalityA : personalityB;
+    const opponent = isPersonalityA ? personalityB : personalityA;
 
-    const systemPrompt = `You are roleplaying as "${currentDebater.name}" in a debate.
+    const objectivePrompt = OBJECTIVE_PROMPTS[current.objective] || OBJECTIVE_PROMPTS.neutral;
+    const opponentObjectiveLabel = opponent.objective.charAt(0).toUpperCase() + opponent.objective.slice(1);
 
-PERSONALITY: ${currentDebater.personality}
+    const systemPrompt = `You are roleplaying as "${current.name}" in a debate.
 
-You are debating against "${opponent.name}" (${opponent.personality}) on the topic: "${topic}"
+OBJECTIVE: ${objectivePrompt}
+
+You are debating against "${opponent.name}" (who has a ${opponentObjectiveLabel} objective) on the topic: "${topic}"
 
 RULES:
-- Stay completely in character as ${currentDebater.name}
-- Be passionate, articulate, and persuasive
-- Respond to your opponent's points directly when they've spoken
+- Stay completely in character as ${current.name}
+- Embody the speaking style, knowledge, and worldview that ${current.name} would naturally have
 - ${lengthRule}
-- Use rhetorical techniques fitting your personality
-- ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position." : "Respond to your opponent's latest argument and advance your own position."}
+- ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position on this topic." : "Respond to your opponent's latest argument and advance your own position."}
 - If a mediator has interjected, acknowledge their point and incorporate it into your argument
 - Never break character or mention that you are an AI`;
 
@@ -52,19 +61,17 @@ RULES:
       { role: "system", content: systemPrompt },
     ];
 
-    // Add debate history as conversation context
     if (history && history.length > 0) {
       for (const entry of history) {
         if (entry.isMediator) {
           messages.push({ role: "user", content: `[MEDIATOR INTERJECTION]: ${entry.content}` });
         } else {
-          const role = entry.debater === currentDebater.name ? "assistant" : "user";
+          const role = entry.debater === current.name ? "assistant" : "user";
           messages.push({ role, content: entry.content });
         }
       }
     }
 
-    // Add the prompt for next response
     if (turnIndex === 0) {
       messages.push({
         role: "user",

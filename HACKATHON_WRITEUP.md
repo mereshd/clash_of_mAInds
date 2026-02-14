@@ -6,7 +6,7 @@
 
 ## Overview
 
-**Personality Arena** (branded as *Clash of Minds*) is an AI-powered debate platform that lets users create two distinct AI personalities and watch them engage in multi-round, real-time debates on any topic. Each debater is given a name, a personality description, and a speaking style — and from there, the AI takes over, generating back-and-forth arguments that are streamed live to the user. Every response can be spoken aloud with distinct, high-fidelity voices powered by ElevenLabs, and the platform also features a live voice agent mode for bidirectional, real-time spoken conversations with an AI.
+**Personality Arena** (branded as *clash of mAInds*) is an AI-powered debate platform that lets users create two distinct AI personalities and watch them engage in multi-round, real-time debates on any topic. Each debater is given a name, a personality description, and a speaking style — and from there, the AI takes over, generating back-and-forth arguments that are streamed live to the user. Every response can be spoken aloud with distinct, high-fidelity voices powered by ElevenLabs, and the platform also features a live voice agent mode for bidirectional, real-time spoken conversations with an AI.
 
 At its core, this project explores a fundamental question: **What happens when you give an AI a personality and let it argue?** The result is compelling, educational, often hilarious, and surprisingly insightful.
 

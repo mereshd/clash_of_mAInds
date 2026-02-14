@@ -111,7 +111,7 @@ function PersonalityCard({
           placeholder="e.g. Ancient Greek philosopher known for the Socratic method"
           value={personality.description}
           onChange={(e) => onChange({ ...personality, description: e.target.value })}
-          className="bg-background/50 border-border text-sm min-h-[4.5rem] resize-none overflow-hidden"
+          className="bg-background/50 border-border text-sm min-h-[4.5rem] max-h-[8rem] resize-none overflow-y-auto"
           rows={3}
           onInput={(e) => {
             const target = e.target as HTMLTextAreaElement;

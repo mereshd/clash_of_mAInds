@@ -18,6 +18,7 @@ export type Objective = "neutral" | "argumentative" | "affirmative";
 export interface Personality {
   name: string;
   objective: Objective;
+  description: string;
 }
 
 interface DebateSetupProps {
@@ -45,15 +46,15 @@ const OBJECTIVE_LABELS: Record<Objective, { label: string; description: string }
 };
 
 export function DebateSetup({ onStart }: DebateSetupProps) {
-  const [personalityA, setPersonalityA] = useState<Personality>({ name: "", objective: "neutral" });
-  const [personalityB, setPersonalityB] = useState<Personality>({ name: "", objective: "argumentative" });
+  const [personalityA, setPersonalityA] = useState<Personality>({ name: "", objective: "neutral", description: "" });
+  const [personalityB, setPersonalityB] = useState<Personality>({ name: "", objective: "argumentative", description: "" });
   const [topic, setTopic] = useState("");
   const [responseLength, setResponseLength] = useState(3);
   const canStart = personalityA.name && personalityB.name && topic;
 
   const applyPreset = (side: "a" | "b", preset: typeof PRESETS[0]) => {
-    if (side === "a") setPersonalityA(preset);
-    else setPersonalityB(preset);
+    if (side === "a") setPersonalityA({ ...preset, description: personalityA.description });
+    else setPersonalityB({ ...preset, description: personalityB.description });
   };
 
   return (
@@ -98,6 +99,12 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
             value={personalityA.name}
             onChange={(e) => setPersonalityA({ ...personalityA, name: e.target.value })}
             className="bg-background/50 border-border"
+          />
+          <Input
+            placeholder="Description (e.g. Ancient Greek philosopher known for the Socratic method)"
+            value={personalityA.description}
+            onChange={(e) => setPersonalityA({ ...personalityA, description: e.target.value })}
+            className="bg-background/50 border-border text-sm"
           />
           <div>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Objective</Label>
@@ -148,6 +155,12 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
             value={personalityB.name}
             onChange={(e) => setPersonalityB({ ...personalityB, name: e.target.value })}
             className="bg-background/50 border-border"
+          />
+          <Input
+            placeholder="Description (e.g. Tech entrepreneur with bold visions for the future)"
+            value={personalityB.description}
+            onChange={(e) => setPersonalityB({ ...personalityB, description: e.target.value })}
+            className="bg-background/50 border-border text-sm"
           />
           <div>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Objective</Label>

@@ -258,7 +258,7 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
         transition={{ delay: 0.3 }}
         className="mb-8"
       >
-        <label className="block text-sm font-medium text-muted-foreground mb-3">Debate Topic</label>
+        <label className="block text-sm font-medium text-muted-foreground mb-3">Conversation Topic</label>
         <Input
           placeholder="What should they debate?"
           value={topic}

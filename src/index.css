@@ -40,6 +40,12 @@
     --debater-a-glow: 8 78% 58% / 0.25;
     --debater-b: 199 89% 60%;
     --debater-b-glow: 199 89% 60% / 0.25;
+    --debater-c: 142 70% 50%;
+    --debater-c-glow: 142 70% 50% / 0.25;
+    --debater-d: 280 70% 60%;
+    --debater-d-glow: 280 70% 60% / 0.25;
+    --debater-e: 32 90% 55%;
+    --debater-e-glow: 32 90% 55% / 0.25;
 
     --stage-gradient: linear-gradient(180deg, hsl(220 20% 7%) 0%, hsl(220 22% 5%) 100%);
     --spotlight-a: radial-gradient(ellipse at 20% 50%, hsl(var(--debater-a-glow)) 0%, transparent 60%);
@@ -79,36 +85,38 @@
     background: var(--spotlight-a), var(--spotlight-b), var(--stage-gradient);
   }
 
-  .debater-a-border {
-    border-color: hsl(var(--debater-a));
-  }
+  .debater-a-border { border-color: hsl(var(--debater-a)); }
+  .debater-b-border { border-color: hsl(var(--debater-b)); }
+  .debater-c-border { border-color: hsl(var(--debater-c)); }
+  .debater-d-border { border-color: hsl(var(--debater-d)); }
+  .debater-e-border { border-color: hsl(var(--debater-e)); }
 
-  .debater-b-border {
-    border-color: hsl(var(--debater-b));
-  }
+  .debater-a-text { color: hsl(var(--debater-a)); }
+  .debater-b-text { color: hsl(var(--debater-b)); }
+  .debater-c-text { color: hsl(var(--debater-c)); }
+  .debater-d-text { color: hsl(var(--debater-d)); }
+  .debater-e-text { color: hsl(var(--debater-e)); }
 
-  .debater-a-text {
-    color: hsl(var(--debater-a));
-  }
-
-  .debater-b-text {
-    color: hsl(var(--debater-b));
-  }
-
-  .debater-a-bg {
-    background-color: hsl(var(--debater-a) / 0.1);
-  }
-
-  .debater-b-bg {
-    background-color: hsl(var(--debater-b) / 0.1);
-  }
+  .debater-a-bg { background-color: hsl(var(--debater-a) / 0.1); }
+  .debater-b-bg { background-color: hsl(var(--debater-b) / 0.1); }
+  .debater-c-bg { background-color: hsl(var(--debater-c) / 0.1); }
+  .debater-d-bg { background-color: hsl(var(--debater-d) / 0.1); }
+  .debater-e-bg { background-color: hsl(var(--debater-e) / 0.1); }
 
   .debater-a-glow {
     box-shadow: 0 0 30px hsl(var(--debater-a-glow)), inset 0 1px 0 hsl(var(--debater-a) / 0.15);
   }
-
   .debater-b-glow {
     box-shadow: 0 0 30px hsl(var(--debater-b-glow)), inset 0 1px 0 hsl(var(--debater-b) / 0.15);
+  }
+  .debater-c-glow {
+    box-shadow: 0 0 30px hsl(var(--debater-c-glow)), inset 0 1px 0 hsl(var(--debater-c) / 0.15);
+  }
+  .debater-d-glow {
+    box-shadow: 0 0 30px hsl(var(--debater-d-glow)), inset 0 1px 0 hsl(var(--debater-d) / 0.15);
+  }
+  .debater-e-glow {
+    box-shadow: 0 0 30px hsl(var(--debater-e-glow)), inset 0 1px 0 hsl(var(--debater-e) / 0.15);
   }
 
   .text-gradient-gold {

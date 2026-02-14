@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 type AppState =
   | { phase: "setup" }
-  | { phase: "debate"; personalityA: Personality; personalityB: Personality; topic: string; responseLength: number }
+  | { phase: "debate"; personalities: Personality[]; topic: string; responseLength: number }
   | { phase: "voice-agent" };
 
 const Index = () => {
@@ -17,8 +17,7 @@ const Index = () => {
     return (
       <div className="min-h-screen py-8">
         <DebateArena
-          personalityA={state.personalityA}
-          personalityB={state.personalityB}
+          personalities={state.personalities}
           topic={state.topic}
           responseLength={state.responseLength}
           onBack={() => setState({ phase: "setup" })}
@@ -41,8 +40,8 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-12">
       <DebateSetup
-        onStart={(personalityA, personalityB, topic, responseLength) =>
-          setState({ phase: "debate", personalityA, personalityB, topic, responseLength })
+        onStart={(personalities, topic, responseLength) =>
+          setState({ phase: "debate", personalities, topic, responseLength })
         }
       />
       <div className="mt-8">

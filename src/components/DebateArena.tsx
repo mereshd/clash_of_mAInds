@@ -415,6 +415,8 @@ export function DebateArena({ personalities, topic, responseLength, onBack }: De
                           text={entry.content}
                           isA={entry.personalityIndex === 0}
                           voiceId={voiceIds[entry.personalityIndex] || voiceIds[0]}
+                          personalityName={personalities[entry.personalityIndex]?.name}
+                          personalityDescription={personalities[entry.personalityIndex]?.description}
                           autoPlay={autoPlayIndex === i}
                           onPlaybackComplete={autoPlayIndex === i ? handleTTSComplete : undefined}
                         />

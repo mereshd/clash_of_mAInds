@@ -1,11 +1,12 @@
 import { useState, useRef, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Swords, Sparkles, ArrowRight, Plus, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Swords, Sparkles, ArrowRight, Plus, X, ChevronLeft, ChevronRight, Wand2, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 
 export interface Personality {
   name: string;
@@ -47,6 +48,9 @@ function PersonalityCard({
   onChange,
   onRemove,
   canRemove,
+  onAutoGenerate,
+  isGenerating,
+  hasTopic,
 }: {
   personality: Personality;
   index: number;
@@ -54,6 +58,9 @@ function PersonalityCard({
   onChange: (p: Personality) => void;
   onRemove: () => void;
   canRemove: boolean;
+  onAutoGenerate: () => void;
+  isGenerating: boolean;
+  hasTopic: boolean;
 }) {
   const colors = PERSONALITY_COLORS[colorIndex % PERSONALITY_COLORS.length];
 
@@ -64,14 +71,30 @@ function PersonalityCard({
           <div className={`w-3 h-3 rounded-full ${colors.dot}`} />
           <h2 className={`font-semibold ${colors.text} text-base`}>Personality {index + 1}</h2>
         </div>
-        {canRemove && (
-          <button
-            onClick={onRemove}
-            className="p-1 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        )}
+        <div className="flex items-center gap-1">
+          {hasTopic && (
+            <button
+              onClick={onAutoGenerate}
+              disabled={isGenerating}
+              className="p-1.5 rounded-md hover:bg-primary/20 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+              title="Auto-generate personality for this topic"
+            >
+              {isGenerating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Wand2 className="w-4 h-4" />
+              )}
+            </button>
+          )}
+          {canRemove && (
+            <button
+              onClick={onRemove}
+              className="p-1 rounded-md hover:bg-destructive/20 text-muted-foreground hover:text-destructive transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
       <div>
         <Label className="text-xs text-muted-foreground mb-1.5 block">Name</Label>
@@ -120,6 +143,7 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
   ]);
   const [topic, setTopic] = useState("");
   const [responseLength, setResponseLength] = useState(3);
+  const [generatingIndex, setGeneratingIndex] = useState<number | null>(null);
   const carouselRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -141,7 +165,6 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
   }, [personalities.length]);
 
   useEffect(() => {
-    // Re-check after layout shifts
     const timer = setTimeout(updateScrollState, 100);
     return () => clearTimeout(timer);
   }, [personalities.length]);
@@ -166,6 +189,41 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
 
   const updatePersonality = (i: number, p: Personality) => {
     setPersonalities(personalities.map((existing, idx) => (idx === i ? p : existing)));
+  };
+
+  const autoGeneratePersonality = async (index: number) => {
+    if (!topic.trim()) {
+      toast.error("Please enter a debate topic first");
+      return;
+    }
+    setGeneratingIndex(index);
+    try {
+      const existingNames = personalities.map((p) => p.name).filter(Boolean);
+      const resp = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/generate-personality`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ topic, existingNames }),
+        }
+      );
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: "Failed to generate" }));
+        throw new Error(err.error || "Failed to generate personality");
+      }
+
+      const generated: Personality = await resp.json();
+      updatePersonality(index, generated);
+      toast.success(`Generated: ${generated.name}`);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to generate personality");
+    } finally {
+      setGeneratingIndex(null);
+    }
   };
 
   return (
@@ -193,11 +251,38 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
         </p>
       </div>
 
-      {/* Personality Carousel */}
+      {/* Topic — now FIRST */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
+        className="mb-8"
+      >
+        <label className="block text-sm font-medium text-muted-foreground mb-3">Debate Topic</label>
+        <Input
+          placeholder="What should they debate?"
+          value={topic}
+          onChange={(e) => setTopic(e.target.value)}
+          className="bg-card border-border text-lg py-6"
+        />
+        <div className="flex flex-wrap gap-2 mt-3">
+          {TOPICS.map((t) => (
+            <button
+              key={t}
+              onClick={() => setTopic(t)}
+              className="text-xs px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground hover:bg-accent transition-colors"
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+      </motion.div>
+
+      {/* Personality Carousel — now SECOND */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.4 }}
         className="relative mb-8"
       >
         <div className="flex items-center gap-2">
@@ -223,6 +308,9 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
                 onChange={(updated) => updatePersonality(i, updated)}
                 onRemove={() => removePersonality(i)}
                 canRemove={personalities.length > 2}
+                onAutoGenerate={() => autoGeneratePersonality(i)}
+                isGenerating={generatingIndex === i}
+                hasTopic={topic.trim().length > 0}
               />
             ))}
 
@@ -251,38 +339,11 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
         </div>
       </motion.div>
 
-      {/* Topic */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.5 }}
-        className="mb-8"
-      >
-        <label className="block text-sm font-medium text-muted-foreground mb-3">Debate Topic</label>
-        <Input
-          placeholder="What should they debate?"
-          value={topic}
-          onChange={(e) => setTopic(e.target.value)}
-          className="bg-card border-border text-lg py-6"
-        />
-        <div className="flex flex-wrap gap-2 mt-3">
-          {TOPICS.map((t) => (
-            <button
-              key={t}
-              onClick={() => setTopic(t)}
-              className="text-xs px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground hover:bg-accent transition-colors"
-            >
-              {t}
-            </button>
-          ))}
-        </div>
-      </motion.div>
-
       {/* Response Length */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.55 }}
+        transition={{ delay: 0.5 }}
         className="mb-8"
       >
         <Label className="block text-sm font-medium text-muted-foreground mb-3">Argument Length</Label>

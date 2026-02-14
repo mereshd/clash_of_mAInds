@@ -26,10 +26,10 @@ interface DebateSetupProps {
 }
 
 const PRESETS = [
-  { name: "Socrates", objective: "neutral" as Objective },
-  { name: "Elon Musk", objective: "argumentative" as Objective },
-  { name: "Marie Curie", objective: "affirmative" as Objective },
-  { name: "Oscar Wilde", objective: "argumentative" as Objective },
+  { name: "Socrates", objective: "neutral" as Objective, description: "Ancient Greek philosopher known for the Socratic method of questioning" },
+  { name: "Elon Musk", objective: "argumentative" as Objective, description: "Tech entrepreneur with bold visions for space, AI, and the future of humanity" },
+  { name: "Marie Curie", objective: "affirmative" as Objective, description: "Pioneering physicist and chemist, first woman to win a Nobel Prize" },
+  { name: "Oscar Wilde", objective: "argumentative" as Objective, description: "Irish poet and playwright famous for sharp wit and flamboyant style" },
 ];
 
 const TOPICS = [
@@ -53,8 +53,8 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
   const canStart = personalityA.name && personalityB.name && topic;
 
   const applyPreset = (side: "a" | "b", preset: typeof PRESETS[0]) => {
-    if (side === "a") setPersonalityA({ ...preset, description: personalityA.description });
-    else setPersonalityB({ ...preset, description: personalityB.description });
+    if (side === "a") setPersonalityA(preset);
+    else setPersonalityB(preset);
   };
 
   return (

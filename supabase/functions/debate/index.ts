@@ -43,17 +43,24 @@ serve(async (req) => {
     const objectivePrompt = OBJECTIVE_PROMPTS[current.objective] || OBJECTIVE_PROMPTS.neutral;
     const opponentObjectiveLabel = opponent.objective.charAt(0).toUpperCase() + opponent.objective.slice(1);
 
-    const systemPrompt = `You are roleplaying as "${current.name}" in a debate.
+    const descriptionClause = current.description
+      ? `\nADDITIONAL CHARACTER CONTEXT: ${current.description}`
+      : "";
+    const opponentDescClause = opponent.description
+      ? ` (${opponent.description})`
+      : "";
 
+    const systemPrompt = `You are roleplaying as "${current.name}" in a conversation.
+${descriptionClause}
 OBJECTIVE: ${objectivePrompt}
 
-You are debating against "${opponent.name}" (who has a ${opponentObjectiveLabel} objective) on the topic: "${topic}"
+You are in a discussion with "${opponent.name}"${opponentDescClause} (whose approach is ${opponentObjectiveLabel}) on the topic: "${topic}"
 
 RULES:
 - Stay completely in character as ${current.name}
 - Embody the speaking style, knowledge, and worldview that ${current.name} would naturally have
 - ${lengthRule}
-- ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position on this topic." : "Respond to your opponent's latest argument and advance your own position."}
+- ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position on this topic." : "Respond to the other participant's latest point and advance your own perspective."}
 - If a mediator has interjected, acknowledge their point and incorporate it into your argument
 - Never break character or mention that you are an AI`;
 
@@ -80,7 +87,7 @@ RULES:
     } else {
       messages.push({
         role: "user",
-        content: "Please respond to your opponent's argument and make your next point.",
+        content: "Please respond to the other participant's point and share your perspective.",
       });
     }
 

@@ -2,6 +2,8 @@
 
 **A multi-agent conversational platform where AI personalities discuss, showdown, and explore any topic — in unison, in real time, in a vocal manner.**
 
+**[Live Demo](https://persona-spark-debate.lovable.app/)** · **[Watch the Demo on YouTube](https://youtu.be/PflYH7n2X4E)**
+
 ---
 
 ## The Problem

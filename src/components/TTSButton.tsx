@@ -5,18 +5,15 @@ import { Button } from "@/components/ui/button";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-// Distinct voices for each debater
-const VOICE_A = "CwhRBWXzGAHq8TQ4Fs17"; // Roger - deep, authoritative
-const VOICE_B = "Xb7hH8MSUJpSbSDYk0k2"; // Alice - clear, articulate
-
 interface TTSButtonProps {
   text: string;
   isA: boolean;
+  voiceId: string;
   autoPlay?: boolean;
   onPlaybackComplete?: () => void;
 }
 
-export function TTSButton({ text, isA, autoPlay = false, onPlaybackComplete }: TTSButtonProps) {
+export function TTSButton({ text, isA, voiceId, autoPlay = false, onPlaybackComplete }: TTSButtonProps) {
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -41,8 +38,8 @@ export function TTSButton({ text, isA, autoPlay = false, onPlaybackComplete }: T
             Authorization: `Bearer ${SUPABASE_KEY}`,
           },
           body: JSON.stringify({
-            text: text.slice(0, 2000), // Limit text length
-            voiceId: isA ? VOICE_A : VOICE_B,
+            text: text.slice(0, 2000),
+            voiceId,
           }),
         }
       );

@@ -4,6 +4,8 @@ import { Swords, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
+import { Label } from "@/components/ui/label";
 
 interface Debater {
   name: string;
@@ -11,7 +13,7 @@ interface Debater {
 }
 
 interface DebateSetupProps {
-  onStart: (debaterA: Debater, debaterB: Debater, topic: string) => void;
+  onStart: (debaterA: Debater, debaterB: Debater, topic: string, responseLength: number) => void;
 }
 
 const PRESETS = [
@@ -32,7 +34,7 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
   const [debaterA, setDebaterA] = useState<Debater>({ name: "", personality: "" });
   const [debaterB, setDebaterB] = useState<Debater>({ name: "", personality: "" });
   const [topic, setTopic] = useState("");
-
+  const [responseLength, setResponseLength] = useState(3); // 1-5 scale
   const canStart = debaterA.name && debaterA.personality && debaterB.name && debaterB.personality && topic;
 
   const applyPreset = (debater: "a" | "b", preset: typeof PRESETS[0]) => {
@@ -168,6 +170,32 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
         </div>
       </motion.div>
 
+      {/* Response Length Control */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.55 }}
+        className="mb-8">
+        <Label className="block text-sm font-medium text-muted-foreground mb-3">
+          Argument Length
+        </Label>
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Brief</span>
+          <Slider
+            value={[responseLength]}
+            onValueChange={([v]) => setResponseLength(v)}
+            min={1}
+            max={5}
+            step={1}
+            className="flex-1"
+          />
+          <span className="text-xs text-muted-foreground whitespace-nowrap">Extensive</span>
+        </div>
+        <p className="text-xs text-muted-foreground mt-2 text-center">
+          {responseLength === 1 ? "1-2 sentences" : responseLength === 2 ? "1 short paragraph" : responseLength === 3 ? "2-3 paragraphs" : responseLength === 4 ? "3-5 paragraphs" : "5+ detailed paragraphs"}
+        </p>
+      </motion.div>
+
       {/* Start Button */}
       <motion.div
         initial={{ opacity: 0 }}
@@ -178,7 +206,7 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
         <Button
           size="lg"
           disabled={!canStart}
-          onClick={() => canStart && onStart(debaterA, debaterB, topic)}
+          onClick={() => canStart && onStart(debaterA, debaterB, topic, responseLength)}
           className="px-8 py-6 text-lg font-semibold bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-30">
 
           Start the Debate

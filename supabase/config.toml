@@ -1,0 +1,4 @@
+project_id = "huqpsxtteztcrhjdsavw"
+
+[functions.debate]
+verify_jwt = false

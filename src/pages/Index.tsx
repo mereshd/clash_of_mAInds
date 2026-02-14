@@ -1,12 +1,39 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { DebateSetup } from "@/components/DebateSetup";
+import { DebateArena } from "@/components/DebateArena";
+
+interface Debater {
+  name: string;
+  personality: string;
+}
+
+type AppState =
+  | { phase: "setup" }
+  | { phase: "debate"; debaterA: Debater; debaterB: Debater; topic: string };
 
 const Index = () => {
-  return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
+  const [state, setState] = useState<AppState>({ phase: "setup" });
+
+  if (state.phase === "debate") {
+    return (
+      <div className="min-h-screen py-8">
+        <DebateArena
+          debaterA={state.debaterA}
+          debaterB={state.debaterB}
+          topic={state.topic}
+          onBack={() => setState({ phase: "setup" })}
+        />
       </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen flex items-center justify-center py-12">
+      <DebateSetup
+        onStart={(debaterA, debaterB, topic) =>
+          setState({ phase: "debate", debaterA, debaterB, topic })
+        }
+      />
     </div>
   );
 };

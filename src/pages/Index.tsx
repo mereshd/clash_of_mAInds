@@ -12,7 +12,7 @@ interface Debater {
 
 type AppState =
   | { phase: "setup" }
-  | { phase: "debate"; debaterA: Debater; debaterB: Debater; topic: string }
+  | { phase: "debate"; debaterA: Debater; debaterB: Debater; topic: string; responseLength: number }
   | { phase: "voice-agent" };
 
 const Index = () => {
@@ -25,6 +25,7 @@ const Index = () => {
           debaterA={state.debaterA}
           debaterB={state.debaterB}
           topic={state.topic}
+          responseLength={state.responseLength}
           onBack={() => setState({ phase: "setup" })}
         />
       </div>
@@ -49,8 +50,8 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center py-12">
       <DebateSetup
-        onStart={(debaterA, debaterB, topic) =>
-          setState({ phase: "debate", debaterA, debaterB, topic })
+        onStart={(debaterA, debaterB, topic, responseLength) =>
+          setState({ phase: "debate", debaterA, debaterB, topic, responseLength })
         }
       />
       <div className="mt-8">

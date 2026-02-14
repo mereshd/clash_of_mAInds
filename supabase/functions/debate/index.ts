@@ -12,12 +12,22 @@ serve(async (req) => {
   }
 
   try {
-    const { debaterA, debaterB, topic, history } = await req.json();
+    const { debaterA, debaterB, topic, history, responseLength } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    // Determine whose turn it is
-    const turnIndex = history ? history.length : 0;
+    const lengthInstructions: Record<number, string> = {
+      1: "Keep your response to 1-2 sentences only. Be extremely concise.",
+      2: "Keep your response to 1 short paragraph.",
+      3: "Keep your response to 2-3 paragraphs.",
+      4: "Write a thorough response of 3-5 paragraphs.",
+      5: "Write an extensive, detailed response of 5+ paragraphs with deep analysis.",
+    };
+    const lengthRule = lengthInstructions[responseLength] || lengthInstructions[3];
+
+    // Determine whose turn it is (excluding mediator entries)
+    const debateHistory = history ? history.filter((e: any) => !e.isMediator) : [];
+    const turnIndex = debateHistory.length;
     const isDebaterA = turnIndex % 2 === 0;
     const currentDebater = isDebaterA ? debaterA : debaterB;
     const opponent = isDebaterA ? debaterB : debaterA;
@@ -32,9 +42,10 @@ RULES:
 - Stay completely in character as ${currentDebater.name}
 - Be passionate, articulate, and persuasive
 - Respond to your opponent's points directly when they've spoken
-- Keep responses concise (2-4 paragraphs max)
+- ${lengthRule}
 - Use rhetorical techniques fitting your personality
 - ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position." : "Respond to your opponent's latest argument and advance your own position."}
+- If a mediator has interjected, acknowledge their point and incorporate it into your argument
 - Never break character or mention that you are an AI`;
 
     const messages: Array<{ role: string; content: string }> = [
@@ -44,8 +55,12 @@ RULES:
     // Add debate history as conversation context
     if (history && history.length > 0) {
       for (const entry of history) {
-        const role = entry.debater === currentDebater.name ? "assistant" : "user";
-        messages.push({ role, content: entry.content });
+        if (entry.isMediator) {
+          messages.push({ role: "user", content: `[MEDIATOR INTERJECTION]: ${entry.content}` });
+        } else {
+          const role = entry.debater === currentDebater.name ? "assistant" : "user";
+          messages.push({ role, content: entry.content });
+        }
       }
     }
 

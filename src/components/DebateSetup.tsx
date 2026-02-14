@@ -59,9 +59,7 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
           <Swords className="w-4 h-4 text-primary" />
           <span className="text-sm font-medium text-muted-foreground">AI Debate Arena</span>
         </motion.div>
-        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-4">clash of mAInds
-          <span className="text-gradient-gold">clash</span> of Minds
-        </h1>
+        <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-4">clash of m<span className="text-gradient-gold">AI</span>nds</h1>
         <p className="text-lg text-muted-foreground max-w-xl mx-auto">
           Create two unique personalities and watch them debate any topic with AI-powered arguments.
         </p>

@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { DebateSetup } from "@/components/DebateSetup";
 import { DebateArena } from "@/components/DebateArena";
+import { VoiceAgent } from "@/components/VoiceAgent";
+import { Mic } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface Debater {
   name: string;
@@ -9,7 +12,8 @@ interface Debater {
 
 type AppState =
   | { phase: "setup" }
-  | { phase: "debate"; debaterA: Debater; debaterB: Debater; topic: string };
+  | { phase: "debate"; debaterA: Debater; debaterB: Debater; topic: string }
+  | { phase: "voice-agent" };
 
 const Index = () => {
   const [state, setState] = useState<AppState>({ phase: "setup" });
@@ -27,13 +31,38 @@ const Index = () => {
     );
   }
 
+  if (state.phase === "voice-agent") {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center py-12 gap-4">
+        <VoiceAgent />
+        <Button
+          variant="ghost"
+          className="text-muted-foreground"
+          onClick={() => setState({ phase: "setup" })}
+        >
+          ← Back to Debate Setup
+        </Button>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen flex items-center justify-center py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center py-12">
       <DebateSetup
         onStart={(debaterA, debaterB, topic) =>
           setState({ phase: "debate", debaterA, debaterB, topic })
         }
       />
+      <div className="mt-8">
+        <Button
+          variant="outline"
+          onClick={() => setState({ phase: "voice-agent" })}
+          className="border-border"
+        >
+          <Mic className="w-4 h-4 mr-2" />
+          Live Voice Agent
+        </Button>
+      </div>
     </div>
   );
 };

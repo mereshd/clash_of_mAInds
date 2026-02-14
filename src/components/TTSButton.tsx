@@ -9,11 +9,13 @@ interface TTSButtonProps {
   text: string;
   isA: boolean;
   voiceId: string;
+  personalityName?: string;
+  personalityDescription?: string;
   autoPlay?: boolean;
   onPlaybackComplete?: () => void;
 }
 
-export function TTSButton({ text, isA, voiceId, autoPlay = false, onPlaybackComplete }: TTSButtonProps) {
+export function TTSButton({ text, isA, voiceId, personalityName, personalityDescription, autoPlay = false, onPlaybackComplete }: TTSButtonProps) {
   const [playing, setPlaying] = useState(false);
   const [loading, setLoading] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -40,6 +42,8 @@ export function TTSButton({ text, isA, voiceId, autoPlay = false, onPlaybackComp
           body: JSON.stringify({
             text: text.slice(0, 2000),
             voiceId,
+            personalityName,
+            personalityDescription,
           }),
         }
       );

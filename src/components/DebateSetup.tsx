@@ -187,8 +187,8 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
             min={1}
             max={5}
             step={1}
-            className="flex-1"
-          />
+            className="flex-1" />
+
           <span className="text-xs text-muted-foreground whitespace-nowrap">Extensive</span>
         </div>
         <p className="text-xs text-muted-foreground mt-2 text-center">

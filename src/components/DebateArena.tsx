@@ -230,6 +230,21 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // When TTS is toggled off while waiting for playback, continue immediately
+  useEffect(() => {
+    if (!voiceEnabled && waitingForTTS) {
+      setAutoPlayIndex(null);
+      setWaitingForTTS(false);
+      const current = entriesRef.current;
+      if (isRoundComplete(current)) {
+        setWaitingForMediator(true);
+        setShowMediator(true);
+      } else if (!stopped && !paused) {
+        setTimeout(() => runTurn(current), 500);
+      }
+    }
+  }, [voiceEnabled, waitingForTTS, stopped, paused, runTurn]);
+
   const handleTTSComplete = useCallback(() => {
     setAutoPlayIndex(null);
     setWaitingForTTS(false);

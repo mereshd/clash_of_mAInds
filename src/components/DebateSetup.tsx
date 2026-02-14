@@ -6,19 +6,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-
-export type Objective = "neutral" | "argumentative" | "affirmative";
 
 export interface Personality {
   name: string;
-  objective: Objective;
   description: string;
 }
 
@@ -35,10 +25,10 @@ const PERSONALITY_COLORS = [
 ];
 
 const PRESETS: Personality[] = [
-  { name: "Socrates", objective: "neutral", description: "Ancient Greek philosopher known for the Socratic method of questioning" },
-  { name: "Elon Musk", objective: "argumentative", description: "Tech entrepreneur with bold visions for space, AI, and the future of humanity" },
-  { name: "Marie Curie", objective: "affirmative", description: "Pioneering physicist and chemist, first woman to win a Nobel Prize" },
-  { name: "Oscar Wilde", objective: "argumentative", description: "Irish poet and playwright famous for sharp wit and flamboyant style" },
+  { name: "Socrates", description: "Ancient Greek philosopher known for the Socratic method of questioning" },
+  { name: "Elon Musk", description: "Tech entrepreneur with bold visions for space, AI, and the future of humanity" },
+  { name: "Marie Curie", description: "Pioneering physicist and chemist, first woman to win a Nobel Prize" },
+  { name: "Oscar Wilde", description: "Irish poet and playwright famous for sharp wit and flamboyant style" },
 ];
 
 const TOPICS = [
@@ -48,13 +38,7 @@ const TOPICS = [
   "Is social media destroying society?",
 ];
 
-const OBJECTIVE_LABELS: Record<Objective, { label: string; description: string }> = {
-  neutral: { label: "Neutral", description: "Balanced, open-minded exploration" },
-  argumentative: { label: "Argumentative", description: "Confrontational, challenging every point" },
-  affirmative: { label: "Affirmative", description: "Supportive, building on ideas" },
-};
-
-const DEFAULT_PERSONALITY: Personality = { name: "", objective: "neutral", description: "" };
+const DEFAULT_PERSONALITY: Personality = { name: "", description: "" };
 
 function PersonalityCard({
   personality,
@@ -113,25 +97,6 @@ function PersonalityCard({
           }}
         />
       </div>
-      <div>
-        <Label className="text-xs text-muted-foreground mb-1.5 block">Objective</Label>
-        <Select
-          value={personality.objective}
-          onValueChange={(v) => onChange({ ...personality, objective: v as Objective })}
-        >
-          <SelectTrigger className="bg-background/50 border-border">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {(Object.keys(OBJECTIVE_LABELS) as Objective[]).map((key) => (
-              <SelectItem key={key} value={key}>
-                <span className="font-medium">{OBJECTIVE_LABELS[key].label}</span>
-                <span className="text-muted-foreground ml-2 text-xs">— {OBJECTIVE_LABELS[key].description}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
       <div className="flex flex-wrap gap-2">
         {PRESETS.map((p) => (
           <button
@@ -150,8 +115,8 @@ function PersonalityCard({
 
 export function DebateSetup({ onStart }: DebateSetupProps) {
   const [personalities, setPersonalities] = useState<Personality[]>([
-    { ...DEFAULT_PERSONALITY, objective: "neutral" },
-    { ...DEFAULT_PERSONALITY, objective: "argumentative" },
+    { ...DEFAULT_PERSONALITY },
+    { ...DEFAULT_PERSONALITY },
   ]);
   const [topic, setTopic] = useState("");
   const [responseLength, setResponseLength] = useState(3);

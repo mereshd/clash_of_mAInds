@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import { TTSButton } from "@/components/TTSButton";
+import { DebateReport } from "@/components/DebateReport";
 import { selectVoicesForMany } from "@/lib/voiceSelection";
 import type { Personality } from "@/components/DebateSetup";
 
@@ -349,6 +350,14 @@ export function DebateArena({ personalities, topic, responseLength, onBack }: De
             {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </Button>
           <span className="text-xs text-muted-foreground font-mono">Round {roundCount}</span>
+          {entries.length > 0 && (
+            <DebateReport
+              personalities={personalities}
+              topic={topic}
+              entries={entries}
+              disabled={streaming}
+            />
+          )}
         </div>
       </div>
 

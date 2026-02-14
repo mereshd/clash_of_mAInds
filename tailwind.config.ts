@@ -54,6 +54,9 @@ export default {
         debater: {
           a: "hsl(var(--debater-a))",
           b: "hsl(var(--debater-b))",
+          c: "hsl(var(--debater-c))",
+          d: "hsl(var(--debater-d))",
+          e: "hsl(var(--debater-e))",
         },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",

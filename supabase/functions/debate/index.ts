@@ -10,9 +10,9 @@ const OBJECTIVE_PROMPTS: Record<string, string> = {
   neutral:
     "You approach this discussion with genuine curiosity and balanced reasoning. You consider multiple perspectives fairly, acknowledge valid points from any side, and seek nuanced understanding rather than winning. You ask thoughtful questions and build bridges between opposing views.",
   argumentative:
-    "You are confrontational and combative. You aggressively challenge every point your opponent makes, pick apart their logic, use sharp rhetoric, and fight to dominate the debate. You are relentless, provocative, and love a good intellectual fight.",
+    "You are confrontational and combative. You aggressively challenge every point others make, pick apart their logic, use sharp rhetoric, and fight to dominate the debate. You are relentless, provocative, and love a good intellectual fight.",
   affirmative:
-    "You are supportive and constructive. You look for common ground, build on your opponent's ideas where possible, and present your own views in a collaborative way. You aim to advance the conversation positively while still making your own case clearly.",
+    "You are supportive and constructive. You look for common ground, build on others' ideas where possible, and present your own views in a collaborative way. You aim to advance the conversation positively while still making your own case clearly.",
 };
 
 serve(async (req) => {
@@ -21,7 +21,7 @@ serve(async (req) => {
   }
 
   try {
-    const { personalityA, personalityB, topic, history, responseLength } = await req.json();
+    const { personalities, currentIndex, topic, history, responseLength } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -34,33 +34,32 @@ serve(async (req) => {
     };
     const lengthRule = lengthInstructions[responseLength] || lengthInstructions[3];
 
+    const current = personalities[currentIndex];
+    const others = personalities.filter((_: any, i: number) => i !== currentIndex);
+    const othersDesc = others.map((o: any) => {
+      const objLabel = o.objective.charAt(0).toUpperCase() + o.objective.slice(1);
+      return `"${o.name}" (${objLabel}${o.description ? `, ${o.description}` : ""})`;
+    }).join(", ");
+
     const debateHistory = history ? history.filter((e: any) => !e.isMediator) : [];
     const turnIndex = debateHistory.length;
-    const isPersonalityA = turnIndex % 2 === 0;
-    const current = isPersonalityA ? personalityA : personalityB;
-    const opponent = isPersonalityA ? personalityB : personalityA;
 
     const objectivePrompt = OBJECTIVE_PROMPTS[current.objective] || OBJECTIVE_PROMPTS.neutral;
-    const opponentObjectiveLabel = opponent.objective.charAt(0).toUpperCase() + opponent.objective.slice(1);
-
     const descriptionClause = current.description
       ? `\nADDITIONAL CHARACTER CONTEXT: ${current.description}`
-      : "";
-    const opponentDescClause = opponent.description
-      ? ` (${opponent.description})`
       : "";
 
     const systemPrompt = `You are roleplaying as "${current.name}" in a conversation.
 ${descriptionClause}
 OBJECTIVE: ${objectivePrompt}
 
-You are in a discussion with "${opponent.name}"${opponentDescClause} (whose approach is ${opponentObjectiveLabel}) on the topic: "${topic}"
+You are in a discussion with ${othersDesc} on the topic: "${topic}"
 
 RULES:
 - Stay completely in character as ${current.name}
 - Embody the speaking style, knowledge, and worldview that ${current.name} would naturally have
 - ${lengthRule}
-- ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position on this topic." : "Respond to the other participant's latest point and advance your own perspective."}
+- ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position on this topic." : "Respond to the other participants' latest points and advance your own perspective."}
 - If a mediator has interjected, acknowledge their point and incorporate it into your argument
 - Never break character or mention that you are an AI`;
 
@@ -74,7 +73,8 @@ RULES:
           messages.push({ role: "user", content: `[MEDIATOR INTERJECTION]: ${entry.content}` });
         } else {
           const role = entry.debater === current.name ? "assistant" : "user";
-          messages.push({ role, content: entry.content });
+          const prefix = entry.debater !== current.name ? `[${entry.debater}]: ` : "";
+          messages.push({ role, content: `${prefix}${entry.content}` });
         }
       }
     }
@@ -82,12 +82,12 @@ RULES:
     if (turnIndex === 0) {
       messages.push({
         role: "user",
-        content: `The debate topic is: "${topic}". Please give your opening statement.`,
+        content: `The discussion topic is: "${topic}". Please give your opening statement.`,
       });
     } else {
       messages.push({
         role: "user",
-        content: "Please respond to the other participant's point and share your perspective.",
+        content: "Please respond to the other participants' points and share your perspective.",
       });
     }
 

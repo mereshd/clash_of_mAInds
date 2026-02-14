@@ -21,11 +21,9 @@ const FEMALE_VOICES = [
 ];
 
 const FEMALE_INDICATORS = [
-  // Names
   "she", "her", "woman", "female", "girl", "lady", "queen", "princess", "mother", "mom",
   "grandmother", "sister", "daughter", "aunt", "niece", "goddess", "empress", "baroness",
   "duchess", "countess", "miss", "mrs", "ms",
-  // Common female names
   "mary", "sarah", "jessica", "jennifer", "amanda", "elizabeth", "emily", "emma",
   "olivia", "sophia", "isabella", "mia", "charlotte", "amelia", "harper", "evelyn",
   "abigail", "ella", "scarlett", "grace", "lily", "aria", "zoey", "riley",
@@ -35,11 +33,9 @@ const FEMALE_INDICATORS = [
 ];
 
 const MALE_INDICATORS = [
-  // Names
   "he", "him", "man", "male", "boy", "king", "prince", "father", "dad",
   "grandfather", "brother", "son", "uncle", "nephew", "god", "emperor", "baron",
   "duke", "count", "sir", "mr", "lord",
-  // Common male names
   "james", "john", "robert", "michael", "william", "david", "richard", "joseph",
   "thomas", "charles", "daniel", "matthew", "andrew", "george", "roger", "brian",
   "chris", "eric", "liam", "noah", "oliver", "benjamin", "lucas", "henry",
@@ -50,17 +46,14 @@ const MALE_INDICATORS = [
 
 function detectGender(name: string, personality: string): "male" | "female" | "unknown" {
   const text = `${name} ${personality}`.toLowerCase();
-  
   let maleScore = 0;
   let femaleScore = 0;
-
   for (const indicator of FEMALE_INDICATORS) {
     if (text.includes(indicator)) femaleScore++;
   }
   for (const indicator of MALE_INDICATORS) {
     if (text.includes(indicator)) maleScore++;
   }
-
   if (femaleScore > maleScore) return "female";
   if (maleScore > femaleScore) return "male";
   return "unknown";
@@ -76,29 +69,40 @@ function hashString(str: string): number {
 }
 
 /**
- * Select distinct voices for two debaters based on their name and personality.
- * Returns [voiceIdA, voiceIdB].
+ * Select distinct voices for two debaters (legacy).
  */
 export function selectVoices(
   debaterA: { name: string; personality: string },
   debaterB: { name: string; personality: string }
 ): [string, string] {
-  const genderA = detectGender(debaterA.name, debaterA.personality);
-  const genderB = detectGender(debaterB.name, debaterB.personality);
+  const result = selectVoicesForMany([debaterA, debaterB]);
+  return [result[0], result[1]];
+}
 
-  const poolA = genderA === "female" ? FEMALE_VOICES : MALE_VOICES;
-  const poolB = genderB === "female" ? FEMALE_VOICES : MALE_VOICES;
+/**
+ * Select distinct voices for N personalities.
+ */
+export function selectVoicesForMany(
+  participants: { name: string; personality: string }[]
+): string[] {
+  const usedIds = new Set<string>();
+  const result: string[] = [];
 
-  const idxA = hashString(debaterA.name + debaterA.personality) % poolA.length;
-  let voiceA = poolA[idxA];
+  for (const p of participants) {
+    const gender = detectGender(p.name, p.personality);
+    const pool = gender === "female" ? FEMALE_VOICES : MALE_VOICES;
+    const baseIdx = hashString(p.name + p.personality) % pool.length;
 
-  let idxB = hashString(debaterB.name + debaterB.personality) % poolB.length;
-  let voiceB = poolB[idxB];
+    let voice = pool[baseIdx];
+    let offset = 0;
+    while (usedIds.has(voice.id) && offset < pool.length) {
+      offset++;
+      voice = pool[(baseIdx + offset) % pool.length];
+    }
 
-  // Ensure different voices if same pool
-  if (voiceA.id === voiceB.id) {
-    voiceB = poolB[(idxB + 1) % poolB.length];
+    usedIds.add(voice.id);
+    result.push(voice.id);
   }
 
-  return [voiceA.id, voiceB.id];
+  return result;
 }

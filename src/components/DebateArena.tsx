@@ -6,11 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import { TTSButton } from "@/components/TTSButton";
 import { selectVoices } from "@/lib/voiceSelection";
-
-interface Debater {
-  name: string;
-  personality: string;
-}
+import type { Personality } from "@/components/DebateSetup";
 
 interface DebateEntry {
   debater: string;
@@ -20,8 +16,8 @@ interface DebateEntry {
 }
 
 interface DebateArenaProps {
-  debaterA: Debater;
-  debaterB: Debater;
+  personalityA: Personality;
+  personalityB: Personality;
   topic: string;
   responseLength: number;
   onBack: () => void;
@@ -39,8 +35,8 @@ const LENGTH_INSTRUCTIONS: Record<number, string> = {
 };
 
 async function streamDebateTurn({
-  debaterA,
-  debaterB,
+  personalityA,
+  personalityB,
   topic,
   history,
   responseLength,
@@ -48,8 +44,8 @@ async function streamDebateTurn({
   onDone,
   signal,
 }: {
-  debaterA: Debater;
-  debaterB: Debater;
+  personalityA: Personality;
+  personalityB: Personality;
   topic: string;
   history: DebateEntry[];
   responseLength: number;
@@ -63,7 +59,7 @@ async function streamDebateTurn({
       "Content-Type": "application/json",
       Authorization: `Bearer ${SUPABASE_KEY}`,
     },
-    body: JSON.stringify({ debaterA, debaterB, topic, history, responseLength }),
+    body: JSON.stringify({ personalityA, personalityB, topic, history, responseLength }),
     signal,
   });
 
@@ -120,8 +116,11 @@ async function streamDebateTurn({
   onDone();
 }
 
-export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack }: DebateArenaProps) {
-  const [voiceIdA, voiceIdB] = selectVoices(debaterA, debaterB);
+export function DebateArena({ personalityA, personalityB, topic, responseLength, onBack }: DebateArenaProps) {
+  const [voiceIdA, voiceIdB] = selectVoices(
+    { name: personalityA.name, personality: "" },
+    { name: personalityB.name, personality: "" }
+  );
   const [entries, setEntries] = useState<DebateEntry[]>([]);
   const [streaming, setStreaming] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -138,21 +137,14 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
   const abortRef = useRef<AbortController | null>(null);
   const entriesRef = useRef<DebateEntry[]>([]);
 
-  useEffect(() => {
-    entriesRef.current = entries;
-  }, [entries]);
+  useEffect(() => { entriesRef.current = entries; }, [entries]);
 
   const scrollToBottom = useCallback(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
+    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, []);
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [entries, currentText, scrollToBottom]);
+  useEffect(() => { scrollToBottom(); }, [entries, currentText, scrollToBottom]);
 
-  // Check if a full round just completed (both debaters spoke)
   const isRoundComplete = (history: DebateEntry[]) => {
     const debateOnly = history.filter(e => !e.isMediator);
     return debateOnly.length >= 2 && debateOnly.length % 2 === 0;
@@ -166,7 +158,7 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
 
     const debateOnly = currentHistory.filter(e => !e.isMediator);
     const isA = debateOnly.length % 2 === 0;
-    const currentDebater = isA ? debaterA : debaterB;
+    const currentPersonality = isA ? personalityA : personalityB;
 
     const controller = new AbortController();
     abortRef.current = controller;
@@ -175,8 +167,8 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
 
     try {
       await streamDebateTurn({
-        debaterA,
-        debaterB,
+        personalityA,
+        personalityB,
         topic,
         history: currentHistory,
         responseLength,
@@ -189,7 +181,7 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
       });
 
       const newEntry: DebateEntry = {
-        debater: currentDebater.name,
+        debater: currentPersonality.name,
         content: accumulated,
         isA,
       };
@@ -201,12 +193,10 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
 
       const newIndex = updatedHistory.length - 1;
 
-      // If voice enabled, auto-play TTS and wait for it to finish
       if (voiceEnabled) {
         setAutoPlayIndex(newIndex);
         setWaitingForTTS(true);
       } else {
-        // No voice - proceed normally
         if (isRoundComplete(updatedHistory)) {
           setWaitingForMediator(true);
           setShowMediator(true);
@@ -222,17 +212,13 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
         setStreaming(false);
       }
     }
-  }, [debaterA, debaterB, topic, responseLength, paused, stopped, voiceEnabled]);
+  }, [personalityA, personalityB, topic, responseLength, paused, stopped, voiceEnabled]);
 
-  // Start on mount
   useEffect(() => {
     runTurn([]);
-    return () => {
-      abortRef.current?.abort();
-    };
+    return () => { abortRef.current?.abort(); };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // When TTS is toggled off while waiting for playback, continue immediately
   useEffect(() => {
     if (!voiceEnabled && waitingForTTS) {
       setAutoPlayIndex(null);
@@ -273,7 +259,6 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
     }
     setShowMediator(false);
     setWaitingForMediator(false);
-    // Continue debate
     setTimeout(() => {
       if (!paused && !stopped) runTurn(entriesRef.current);
     }, 500);
@@ -295,9 +280,15 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
     setStreaming(false);
   };
 
+  const OBJECTIVE_LABEL: Record<string, string> = {
+    neutral: "Neutral",
+    argumentative: "Argumentative",
+    affirmative: "Affirmative",
+  };
+
   const debateOnly = entries.filter(e => !e.isMediator);
   const currentIsA = debateOnly.length % 2 === 0;
-  const currentDebater = currentIsA ? debaterA : debaterB;
+  const currentPersonality = currentIsA ? personalityA : personalityB;
   const roundCount = Math.ceil(debateOnly.length / 2);
 
   return (
@@ -352,22 +343,20 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
           >
             {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
           </Button>
-          <span className="text-xs text-muted-foreground font-mono">
-            Round {roundCount}
-          </span>
+          <span className="text-xs text-muted-foreground font-mono">Round {roundCount}</span>
         </div>
       </div>
 
       {/* VS Header */}
       <div className="flex items-center justify-center gap-4 mb-8">
         <div className="text-right">
-          <p className="font-bold debater-a-text text-lg">{debaterA.name}</p>
-          <p className="text-xs text-muted-foreground max-w-[150px] truncate">{debaterA.personality.slice(0, 50)}</p>
+          <p className="font-bold debater-a-text text-lg">{personalityA.name}</p>
+          <p className="text-xs text-muted-foreground">{OBJECTIVE_LABEL[personalityA.objective]}</p>
         </div>
         <div className="text-gradient-gold text-2xl font-bold">VS</div>
         <div className="text-left">
-          <p className="font-bold debater-b-text text-lg">{debaterB.name}</p>
-          <p className="text-xs text-muted-foreground max-w-[150px] truncate">{debaterB.personality.slice(0, 50)}</p>
+          <p className="font-bold debater-b-text text-lg">{personalityB.name}</p>
+          <p className="text-xs text-muted-foreground">{OBJECTIVE_LABEL[personalityB.objective]}</p>
         </div>
       </div>
 
@@ -424,7 +413,6 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
           ))}
         </AnimatePresence>
 
-        {/* Currently streaming */}
         {streaming && currentText && (
           <motion.div
             initial={{ opacity: 0, x: currentIsA ? -20 : 20 }}
@@ -439,7 +427,7 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
               }`}
             >
               <p className={`text-xs font-semibold mb-2 ${currentIsA ? "debater-a-text" : "debater-b-text"}`}>
-                {currentDebater.name}
+                {currentPersonality.name}
               </p>
               <div className="text-sm text-foreground prose prose-invert prose-sm max-w-none">
                 <ReactMarkdown>{currentText}</ReactMarkdown>
@@ -448,7 +436,6 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
           </motion.div>
         )}
 
-        {/* Loading indicator */}
         {streaming && !currentText && (
           <motion.div
             initial={{ opacity: 0 }}
@@ -459,12 +446,11 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
               currentIsA ? "debater-a-bg debater-a-border border" : "debater-b-bg debater-b-border border"
             }`}>
               <Loader2 className={`w-4 h-4 animate-spin ${currentIsA ? "debater-a-text" : "debater-b-text"}`} />
-              <span className="text-sm text-muted-foreground">{currentDebater.name} is thinking...</span>
+              <span className="text-sm text-muted-foreground">{currentPersonality.name} is thinking...</span>
             </div>
           </motion.div>
         )}
 
-        {/* Mediator interjection panel */}
         {showMediator && !streaming && (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -486,9 +472,7 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
                 className="bg-background/50 border-border min-h-[60px] resize-none text-sm"
               />
               <div className="flex gap-2 justify-end">
-                <Button variant="ghost" size="sm" onClick={handleSkipMediator}>
-                  Skip
-                </Button>
+                <Button variant="ghost" size="sm" onClick={handleSkipMediator}>Skip</Button>
                 <Button size="sm" onClick={handleMediatorSubmit} disabled={!mediatorInput.trim()}>
                   <Send className="w-3 h-3 mr-1" />
                   Interject
@@ -498,7 +482,6 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
           </motion.div>
         )}
 
-        {/* Debate ended */}
         {stopped && !streaming && (
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
@@ -514,12 +497,7 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
       {error && (
         <div className="text-center mb-4">
           <p className="text-destructive text-sm">{error}</p>
-          <Button
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() => runTurn(entriesRef.current)}
-          >
+          <Button variant="outline" size="sm" className="mt-2" onClick={() => runTurn(entriesRef.current)}>
             Retry
           </Button>
         </div>

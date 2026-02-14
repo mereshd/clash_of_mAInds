@@ -110,8 +110,8 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
               placeholder="e.g. Ancient Greek philosopher known for the Socratic method"
               value={personalityA.description}
               onChange={(e) => setPersonalityA({ ...personalityA, description: e.target.value })}
-              className="bg-background/50 border-border text-sm min-h-[2.5rem] resize-none overflow-hidden"
-              rows={1}
+              className="bg-background/50 border-border text-sm min-h-[4.5rem] resize-none overflow-hidden"
+              rows={3}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = "auto";
@@ -178,8 +178,8 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
               placeholder="e.g. Tech entrepreneur with bold visions for the future"
               value={personalityB.description}
               onChange={(e) => setPersonalityB({ ...personalityB, description: e.target.value })}
-              className="bg-background/50 border-border text-sm min-h-[2.5rem] resize-none overflow-hidden"
-              rows={1}
+              className="bg-background/50 border-border text-sm min-h-[4.5rem] resize-none overflow-hidden"
+              rows={3}
               onInput={(e) => {
                 const target = e.target as HTMLTextAreaElement;
                 target.style.height = "auto";

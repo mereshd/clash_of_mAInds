@@ -6,13 +6,14 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { debaterA, debaterB, topic, history, responseLength } = await req.json();
+    const { personalities, currentIndex, topic, history, responseLength } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -25,26 +26,29 @@ serve(async (req) => {
     };
     const lengthRule = lengthInstructions[responseLength] || lengthInstructions[3];
 
-    // Determine whose turn it is (excluding mediator entries)
+    const current = personalities[currentIndex];
+    const others = personalities.filter((_: any, i: number) => i !== currentIndex);
+    const othersDesc = others.map((o: any) => {
+      return `"${o.name}"${o.description ? ` (${o.description})` : ""}`;
+    }).join(", ");
+
     const debateHistory = history ? history.filter((e: any) => !e.isMediator) : [];
     const turnIndex = debateHistory.length;
-    const isDebaterA = turnIndex % 2 === 0;
-    const currentDebater = isDebaterA ? debaterA : debaterB;
-    const opponent = isDebaterA ? debaterB : debaterA;
 
-    const systemPrompt = `You are roleplaying as "${currentDebater.name}" in a debate.
+    const descriptionClause = current.description
+      ? `\nCHARACTER DESCRIPTION: ${current.description}`
+      : "";
 
-PERSONALITY: ${currentDebater.personality}
+    const systemPrompt = `You are roleplaying as "${current.name}" in a conversation.
+${descriptionClause}
 
-You are debating against "${opponent.name}" (${opponent.personality}) on the topic: "${topic}"
+You are in a discussion with ${othersDesc} on the topic: "${topic}"
 
 RULES:
-- Stay completely in character as ${currentDebater.name}
-- Be passionate, articulate, and persuasive
-- Respond to your opponent's points directly when they've spoken
+- Stay completely in character as ${current.name}
+- Embody the speaking style, knowledge, and worldview that ${current.name} would naturally have
 - ${lengthRule}
-- Use rhetorical techniques fitting your personality
-- ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position." : "Respond to your opponent's latest argument and advance your own position."}
+- ${turnIndex === 0 ? "You are giving the OPENING STATEMENT. Set the stage for your position on this topic." : "Respond to the other participants' latest points and advance your own perspective."}
 - If a mediator has interjected, acknowledge their point and incorporate it into your argument
 - Never break character or mention that you are an AI`;
 
@@ -52,28 +56,27 @@ RULES:
       { role: "system", content: systemPrompt },
     ];
 
-    // Add debate history as conversation context
     if (history && history.length > 0) {
       for (const entry of history) {
         if (entry.isMediator) {
           messages.push({ role: "user", content: `[MEDIATOR INTERJECTION]: ${entry.content}` });
         } else {
-          const role = entry.debater === currentDebater.name ? "assistant" : "user";
-          messages.push({ role, content: entry.content });
+          const role = entry.debater === current.name ? "assistant" : "user";
+          const prefix = entry.debater !== current.name ? `[${entry.debater}]: ` : "";
+          messages.push({ role, content: `${prefix}${entry.content}` });
         }
       }
     }
 
-    // Add the prompt for next response
     if (turnIndex === 0) {
       messages.push({
         role: "user",
-        content: `The debate topic is: "${topic}". Please give your opening statement.`,
+        content: `The discussion topic is: "${topic}". Please give your opening statement.`,
       });
     } else {
       messages.push({
         role: "user",
-        content: "Please respond to your opponent's argument and make your next point.",
+        content: "Please respond to the other participants' points and share your perspective.",
       });
     }
 

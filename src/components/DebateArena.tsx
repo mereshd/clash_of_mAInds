@@ -127,6 +127,8 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
   const [error, setError] = useState<string | null>(null);
   const [currentText, setCurrentText] = useState("");
   const [voiceEnabled, setVoiceEnabled] = useState(true);
+  const [autoPlayIndex, setAutoPlayIndex] = useState<number | null>(null);
+  const [waitingForTTS, setWaitingForTTS] = useState(false);
   const [mediatorInput, setMediatorInput] = useState("");
   const [showMediator, setShowMediator] = useState(false);
   const [waitingForMediator, setWaitingForMediator] = useState(false);
@@ -195,15 +197,22 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
       setCurrentText("");
       setStreaming(false);
 
-      // After a full round, pause for mediator opportunity
-      if (isRoundComplete(updatedHistory)) {
-        setWaitingForMediator(true);
-        setShowMediator(true);
-      } else if (!stopped) {
-        // Continue to next debater
-        setTimeout(() => {
-          if (!paused && !stopped) runTurn(updatedHistory);
-        }, 1500);
+      const newIndex = updatedHistory.length - 1;
+
+      // If voice enabled, auto-play TTS and wait for it to finish
+      if (voiceEnabled) {
+        setAutoPlayIndex(newIndex);
+        setWaitingForTTS(true);
+      } else {
+        // No voice - proceed normally
+        if (isRoundComplete(updatedHistory)) {
+          setWaitingForMediator(true);
+          setShowMediator(true);
+        } else if (!stopped) {
+          setTimeout(() => {
+            if (!paused && !stopped) runTurn(updatedHistory);
+          }, 1500);
+        }
       }
     } catch (e: any) {
       if (e.name !== "AbortError") {
@@ -211,7 +220,7 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
         setStreaming(false);
       }
     }
-  }, [debaterA, debaterB, topic, responseLength, paused, stopped]);
+  }, [debaterA, debaterB, topic, responseLength, paused, stopped, voiceEnabled]);
 
   // Start on mount
   useEffect(() => {
@@ -220,6 +229,18 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
       abortRef.current?.abort();
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleTTSComplete = useCallback(() => {
+    setAutoPlayIndex(null);
+    setWaitingForTTS(false);
+    const current = entriesRef.current;
+    if (isRoundComplete(current)) {
+      setWaitingForMediator(true);
+      setShowMediator(true);
+    } else if (!stopped && !paused) {
+      setTimeout(() => runTurn(current), 500);
+    }
+  }, [stopped, paused, runTurn]);
 
   const handleMediatorSubmit = () => {
     if (mediatorInput.trim()) {
@@ -368,7 +389,12 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
                       {entry.debater}
                     </p>
                     {voiceEnabled && (
-                      <TTSButton text={entry.content} isA={entry.isA} />
+                      <TTSButton
+                        text={entry.content}
+                        isA={entry.isA}
+                        autoPlay={autoPlayIndex === i}
+                        onPlaybackComplete={autoPlayIndex === i ? handleTTSComplete : undefined}
+                      />
                     )}
                   </div>
                   <div className="text-sm text-foreground prose prose-invert prose-sm max-w-none">

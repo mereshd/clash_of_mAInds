@@ -1,6 +1,6 @@
 # clash of m**AI**nds
 
-**A multi-agent conversational platform where AI personalities discuss, debate, and explore any topic — together, in real time, with voice.**
+**A multi-agent conversational platform where AI personalities discuss, showdown, and explore any topic — in unison, in real time, in a vocal manner.**
 
 ---
 
@@ -8,7 +8,7 @@
 
 Exploring a topic from a single angle gives you a single answer. Real understanding comes from hearing Socrates question Elon Musk while Marie Curie weighs in with empirical rigor — all in the same room, in real time, with voice.
 
-**clash of mAInds** is a conversational platform where 2–5 AI personalities engage in free-form discussions, structured debates, or collaborative explorations on any topic. Responses stream live, each personality speaks aloud with a distinct voice, and the platform produces structured analytical reports when the conversation wraps up. You sit in the moderator's chair.
+**clash of mAInds** is a conversational platform where 2–5 AI personalities engage in free-form discussions, structured debates, or collaborative explorations on any topic. Responses stream live, each personality speaks aloud with a distinct voice, and the platform produces structured analytical reports when the conversation wraps up. All while you sit in the moderator's chair.
 
 ## Who Is It For
 

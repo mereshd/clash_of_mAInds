@@ -234,15 +234,6 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
       className="w-full max-w-6xl mx-auto px-4"
     >
       <div className="text-center mb-12">
-        <motion.div
-          initial={{ scale: 0 }}
-          animate={{ scale: 1 }}
-          transition={{ type: "spring", delay: 0.2 }}
-          className="inline-flex items-center gap-2 mb-4 px-4 py-2 rounded-full bg-secondary border border-border"
-        >
-          <Swords className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-muted-foreground">AI Debate Arena</span>
-        </motion.div>
         <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-4">
           clash of m<span className="text-gradient-gold">AI</span>nds
         </h1>

@@ -123,11 +123,6 @@ async function streamDebateTurn({
   onDone();
 }
 
-const OBJECTIVE_LABEL: Record<string, string> = {
-  neutral: "Neutral",
-  argumentative: "Argumentative",
-  affirmative: "Affirmative",
-};
 
 export function DebateArena({ personalities, topic, responseLength, onBack }: DebateArenaProps) {
   const voiceIds = selectVoicesForMany(personalities.map((p) => ({ name: p.name, personality: p.description })));
@@ -364,7 +359,6 @@ export function DebateArena({ personalities, topic, responseLength, onBack }: De
           return (
             <div key={i} className="text-center">
               <p className={`font-bold ${colors.text} text-sm md:text-base`}>{p.name}</p>
-              <p className="text-xs text-muted-foreground">{OBJECTIVE_LABEL[p.objective]}</p>
             </div>
           );
         }).reduce<React.ReactNode[]>((acc, el, i) => {

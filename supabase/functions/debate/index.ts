@@ -6,14 +6,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const OBJECTIVE_PROMPTS: Record<string, string> = {
-  neutral:
-    "You approach this discussion with genuine curiosity and balanced reasoning. You consider multiple perspectives fairly, acknowledge valid points from any side, and seek nuanced understanding rather than winning. You ask thoughtful questions and build bridges between opposing views.",
-  argumentative:
-    "You are confrontational and combative. You aggressively challenge every point others make, pick apart their logic, use sharp rhetoric, and fight to dominate the debate. You are relentless, provocative, and love a good intellectual fight.",
-  affirmative:
-    "You are supportive and constructive. You look for common ground, build on others' ideas where possible, and present your own views in a collaborative way. You aim to advance the conversation positively while still making your own case clearly.",
-};
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -37,21 +29,18 @@ serve(async (req) => {
     const current = personalities[currentIndex];
     const others = personalities.filter((_: any, i: number) => i !== currentIndex);
     const othersDesc = others.map((o: any) => {
-      const objLabel = o.objective.charAt(0).toUpperCase() + o.objective.slice(1);
-      return `"${o.name}" (${objLabel}${o.description ? `, ${o.description}` : ""})`;
+      return `"${o.name}"${o.description ? ` (${o.description})` : ""}`;
     }).join(", ");
 
     const debateHistory = history ? history.filter((e: any) => !e.isMediator) : [];
     const turnIndex = debateHistory.length;
 
-    const objectivePrompt = OBJECTIVE_PROMPTS[current.objective] || OBJECTIVE_PROMPTS.neutral;
     const descriptionClause = current.description
-      ? `\nADDITIONAL CHARACTER CONTEXT: ${current.description}`
+      ? `\nCHARACTER DESCRIPTION: ${current.description}`
       : "";
 
     const systemPrompt = `You are roleplaying as "${current.name}" in a conversation.
 ${descriptionClause}
-OBJECTIVE: ${objectivePrompt}
 
 You are in a discussion with ${othersDesc} on the topic: "${topic}"
 

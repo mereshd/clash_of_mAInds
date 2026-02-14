@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from "react-markdown";
 import { TTSButton } from "@/components/TTSButton";
+import { selectVoices } from "@/lib/voiceSelection";
 
 interface Debater {
   name: string;
@@ -120,6 +121,7 @@ async function streamDebateTurn({
 }
 
 export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack }: DebateArenaProps) {
+  const [voiceIdA, voiceIdB] = selectVoices(debaterA, debaterB);
   const [entries, setEntries] = useState<DebateEntry[]>([]);
   const [streaming, setStreaming] = useState(false);
   const [paused, setPaused] = useState(false);
@@ -407,6 +409,7 @@ export function DebateArena({ debaterA, debaterB, topic, responseLength, onBack 
                       <TTSButton
                         text={entry.content}
                         isA={entry.isA}
+                        voiceId={entry.isA ? voiceIdA : voiceIdB}
                         autoPlay={autoPlayIndex === i}
                         onPlaybackComplete={autoPlayIndex === i ? handleTTSComplete : undefined}
                       />

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Swords, Sparkles, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import {
@@ -150,18 +151,30 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
             <div className="w-3 h-3 rounded-full bg-debater-b" />
             <h2 className="font-semibold debater-b-text text-lg">Personality B</h2>
           </div>
-          <Input
-            placeholder="Name (e.g. Elon Musk)"
-            value={personalityB.name}
-            onChange={(e) => setPersonalityB({ ...personalityB, name: e.target.value })}
-            className="bg-background/50 border-border"
-          />
-          <Input
-            placeholder="Description (e.g. Tech entrepreneur with bold visions for the future)"
-            value={personalityB.description}
-            onChange={(e) => setPersonalityB({ ...personalityB, description: e.target.value })}
-            className="bg-background/50 border-border text-sm"
-          />
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Name</Label>
+            <Input
+              placeholder="e.g. Elon Musk"
+              value={personalityB.name}
+              onChange={(e) => setPersonalityB({ ...personalityB, name: e.target.value })}
+              className="bg-background/50 border-border"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Description</Label>
+            <Textarea
+              placeholder="e.g. Tech entrepreneur with bold visions for the future"
+              value={personalityB.description}
+              onChange={(e) => setPersonalityB({ ...personalityB, description: e.target.value })}
+              className="bg-background/50 border-border text-sm min-h-[2.5rem] resize-none overflow-hidden"
+              rows={1}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = "auto";
+                target.style.height = target.scrollHeight + "px";
+              }}
+            />
+          </div>
           <div>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Objective</Label>
             <Select

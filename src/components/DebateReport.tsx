@@ -63,7 +63,7 @@ export function DebateReport({ personalities, topic, entries, disabled }: Debate
   const [expandedParticipant, setExpandedParticipant] = useState<number | null>(null);
 
   const generateReport = async () => {
-    if (report) return; // Already generated
+    setReport(null);
     setLoading(true);
     try {
       const resp = await fetch(`${SUPABASE_URL}/functions/v1/debate-summary`, {

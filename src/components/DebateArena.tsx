@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowLeft, Pause, Play, Loader2 } from "lucide-react";
+import { ArrowLeft, Pause, Play, Loader2, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import ReactMarkdown from "react-markdown";
+import { TTSButton } from "@/components/TTSButton";
 
 interface Debater {
   name: string;
@@ -112,6 +113,7 @@ export function DebateArena({ debaterA, debaterB, topic, onBack }: DebateArenaPr
   const [paused, setPaused] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentText, setCurrentText] = useState("");
+  const [voiceEnabled, setVoiceEnabled] = useState(true);
   const scrollRef = useRef<HTMLDivElement>(null);
   const abortRef = useRef<AbortController | null>(null);
   const entriesRef = useRef<DebateEntry[]>([]);
@@ -229,6 +231,15 @@ export function DebateArena({ debaterA, debaterB, topic, onBack }: DebateArenaPr
               {paused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
             </Button>
           )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setVoiceEnabled(!voiceEnabled)}
+            className="border-border"
+            title={voiceEnabled ? "Mute voice" : "Enable voice"}
+          >
+            {voiceEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+          </Button>
           <span className="text-xs text-muted-foreground font-mono">
             {Math.ceil(entries.length / 2)}/{maxRounds / 2} rounds
           </span>
@@ -269,9 +280,14 @@ export function DebateArena({ debaterA, debaterB, topic, onBack }: DebateArenaPr
                     : "debater-b-bg debater-b-glow debater-b-border border"
                 }`}
               >
-                <p className={`text-xs font-semibold mb-2 ${entry.isA ? "debater-a-text" : "debater-b-text"}`}>
-                  {entry.debater}
-                </p>
+                <div className="flex items-center justify-between mb-2">
+                  <p className={`text-xs font-semibold ${entry.isA ? "debater-a-text" : "debater-b-text"}`}>
+                    {entry.debater}
+                  </p>
+                  {voiceEnabled && (
+                    <TTSButton text={entry.content} isA={entry.isA} />
+                  )}
+                </div>
                 <div className="text-sm text-foreground prose prose-invert prose-sm max-w-none">
                   <ReactMarkdown>{entry.content}</ReactMarkdown>
                 </div>

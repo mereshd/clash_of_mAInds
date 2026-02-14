@@ -95,18 +95,30 @@ export function DebateSetup({ onStart }: DebateSetupProps) {
             <div className="w-3 h-3 rounded-full bg-debater-a" />
             <h2 className="font-semibold debater-a-text text-lg">Personality A</h2>
           </div>
-          <Input
-            placeholder="Name (e.g. Socrates)"
-            value={personalityA.name}
-            onChange={(e) => setPersonalityA({ ...personalityA, name: e.target.value })}
-            className="bg-background/50 border-border"
-          />
-          <Input
-            placeholder="Description (e.g. Ancient Greek philosopher known for the Socratic method)"
-            value={personalityA.description}
-            onChange={(e) => setPersonalityA({ ...personalityA, description: e.target.value })}
-            className="bg-background/50 border-border text-sm"
-          />
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Name</Label>
+            <Input
+              placeholder="e.g. Socrates"
+              value={personalityA.name}
+              onChange={(e) => setPersonalityA({ ...personalityA, name: e.target.value })}
+              className="bg-background/50 border-border"
+            />
+          </div>
+          <div>
+            <Label className="text-xs text-muted-foreground mb-1.5 block">Description</Label>
+            <Textarea
+              placeholder="e.g. Ancient Greek philosopher known for the Socratic method"
+              value={personalityA.description}
+              onChange={(e) => setPersonalityA({ ...personalityA, description: e.target.value })}
+              className="bg-background/50 border-border text-sm min-h-[2.5rem] resize-none overflow-hidden"
+              rows={1}
+              onInput={(e) => {
+                const target = e.target as HTMLTextAreaElement;
+                target.style.height = "auto";
+                target.style.height = target.scrollHeight + "px";
+              }}
+            />
+          </div>
           <div>
             <Label className="text-xs text-muted-foreground mb-1.5 block">Objective</Label>
             <Select
